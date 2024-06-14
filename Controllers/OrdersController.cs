@@ -146,6 +146,10 @@ namespace dotnet_CRUD.Controllers
         public ActionResult DeleteConfirmed(int id)
         {
             Orders orders = db.Orders.Find(id);
+            var orderDetails = db.Order_Details.Where(od => od.OrderID.Equals(id));
+
+            //有FK關聯，先刪除order detail
+            db.Order_Details.RemoveRange(orderDetails);
             db.Orders.Remove(orders);
             db.SaveChanges();
             return RedirectToAction("Index");
