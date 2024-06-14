@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
+using System.Data.Entity.Validation;
 using System.Linq;
 using System.Net;
+using System.Security.Cryptography;
 using System.Web;
 using System.Web.Mvc;
 using dotnet_CRUD.Models;
@@ -48,14 +50,23 @@ namespace dotnet_CRUD.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Create([Bind(Include = "CustomerID,CompanyName,ContactName,ContactTitle,Address,City,Region,PostalCode,Country,Phone,Fax")] Customers customers)
         {
-            if (ModelState.IsValid)
+            try
             {
-                db.Customers.Add(customers);
-                db.SaveChanges();
-                return RedirectToAction("Index");
-            }
+                if (ModelState.IsValid)
+                {
+                    db.Customers.Add(customers);
+                    db.SaveChanges();
+                    return RedirectToAction("Index");
+                }
 
-            return View(customers);
+                return View(customers);
+            }
+            catch (DbEntityValidationException dbEntityValidationException)
+            {
+                var exceptionMessage = FetchValidationErrorMessage(dbEntityValidationException);
+                ModelState.AddModelError("", exceptionMessage);
+                return View(customers);
+            }
         }
 
         // GET: Customers/Edit/5
@@ -80,13 +91,22 @@ namespace dotnet_CRUD.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Edit([Bind(Include = "CustomerID,CompanyName,ContactName,ContactTitle,Address,City,Region,PostalCode,Country,Phone,Fax")] Customers customers)
         {
-            if (ModelState.IsValid)
+            try
             {
-                db.Entry(customers).State = EntityState.Modified;
-                db.SaveChanges();
-                return RedirectToAction("Index");
+                if (ModelState.IsValid)
+                {
+                    db.Entry(customers).State = EntityState.Modified;
+                    db.SaveChanges();
+                    return RedirectToAction("Index");
+                }
+                return View(customers);
             }
-            return View(customers);
+            catch (DbEntityValidationException dbEntityValidationException)
+            {
+                var exceptionMessage = FetchValidationErrorMessage(dbEntityValidationException);
+                ModelState.AddModelError("", exceptionMessage);
+                return View(customers);
+            }
         }
 
         // GET: Customers/Delete/5
@@ -122,6 +142,15 @@ namespace dotnet_CRUD.Controllers
                 db.Dispose();
             }
             base.Dispose(disposing);
+        }
+
+        protected string FetchValidationErrorMessage(DbEntityValidationException dbEntityValidationException)
+        {
+            var entityError = dbEntityValidationException.EntityValidationErrors.SelectMany(x => x.ValidationErrors).Select(x => x.ErrorMessage);
+
+            var getFullMessage = string.Join("\n",  entityError);
+            var exceptionMessage = string.Concat("errors are: \n", getFullMessage);
+            return exceptionMessage;
         }
     }
 }
