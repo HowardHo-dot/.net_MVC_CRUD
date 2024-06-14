@@ -12,7 +12,7 @@ using dotnet_CRUD.Models;
 
 namespace dotnet_CRUD.Controllers
 {
-    public class CustomersController : Controller
+    public class CustomersController : BaseController
     {
         private NorthwindEntities db = new NorthwindEntities();
 
@@ -144,13 +144,5 @@ namespace dotnet_CRUD.Controllers
             base.Dispose(disposing);
         }
 
-        protected string FetchValidationErrorMessage(DbEntityValidationException dbEntityValidationException)
-        {
-            var entityError = dbEntityValidationException.EntityValidationErrors.SelectMany(x => x.ValidationErrors).Select(x => x.ErrorMessage);
-
-            var getFullMessage = string.Join("\n",  entityError);
-            var exceptionMessage = string.Concat("errors are: \n", getFullMessage);
-            return exceptionMessage;
-        }
     }
 }

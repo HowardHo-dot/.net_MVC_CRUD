@@ -10,7 +10,7 @@ using dotnet_CRUD.Models;
 
 namespace dotnet_CRUD.Controllers
 {
-    public class OrdersController : Controller
+    public class OrdersController : BaseController
     {
         private NorthwindEntities db = new NorthwindEntities();
 
